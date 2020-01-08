@@ -35,7 +35,6 @@ export const Request = props => {
     try {
       var successful = document.execCommand("copy");
       var msg = successful ? "successful" : "unsuccessful";
-      console.log("Fallback: Copying text command was " + msg);
     } catch (err) {
       console.error("Fallback: Oops, unable to copy", err);
     }
@@ -51,7 +50,6 @@ export const Request = props => {
     }
     navigator.clipboard.writeText(text).then(
       function() {
-        console.log("Async: Copying to clipboard was successful!");
         // ToastsStore.success(
         //   "Copying to clipboard was successful. Let mock...."
         // );
@@ -93,7 +91,6 @@ export const Request = props => {
 
   const { node,context } = props;
   if (node && node.name) {
-    console.log(node);
     
     const { status } = node.obj.metadata;
     const isDisabled = status === statusDISABLE;
@@ -104,7 +101,7 @@ export const Request = props => {
             <span className="breadcrumb-item active" aria-current="page">
               {node.name}
             </span>
-            { isDisabled ? <span class="stamp is-nope">DISABLED</span> : undefined }
+            { isDisabled ? <span className="stamp is-nope">DISABLED</span> : undefined }
           </ol>
         </nav>
         <HeaderComponent />

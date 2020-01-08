@@ -499,7 +499,6 @@ export default class WhyMock extends PureComponent {
       userSettings: { mode }
     } = this.state;
     obj = obj || { metadata: {} };
-    console.log(context);
 
     return (
       <div className={mode === "dard" ? "dard-mode" : ""}>

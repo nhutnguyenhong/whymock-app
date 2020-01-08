@@ -65,7 +65,7 @@ export const CreateStub = props => {
     props.handleClose();
   };
   const handleSave = () => {
-    const context = props.initialData.share
+    const context = props.initialData && props.initialData.share
       ? contextRef.current.value
       : props.context;
     const data = {
