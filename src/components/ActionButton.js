@@ -17,7 +17,8 @@ export const ActionButton = ({
   duplicateStub,
   deleteStub,
   disableStub,
-  enableStub
+  enableStub,
+  shareStub
 }) => {
   return (
     <Container>
@@ -96,6 +97,18 @@ export const ActionButton = ({
           }}
           onClick={disableStub}
           icon="fa fa-eye-slash"
+        />
+      )}
+      {hasDelete && (
+        <Button
+          href="#"
+          tooltip="Share this stub to context"
+          onClick={shareStub}
+          icon="fa fa-share-square-o"
+          styles={{
+            backgroundColor: darkColors.cyan,
+            color: lightColors.white
+          }}
         />
       )}
       <Button

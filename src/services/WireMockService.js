@@ -1,7 +1,7 @@
 import { WMurl } from "../constant";
 
-export const getMappings = callback => {
-  fetch(WMurl + "/__admin/mappings")
+export const getMappings = (parameters,callback)=> {
+  fetch(WMurl + '/__admin/mappings' +(parameters? '?' + parameters : ''))
     .then(res => res.json())
     .then(data => {
       callback(data);

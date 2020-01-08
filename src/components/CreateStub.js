@@ -21,6 +21,9 @@ const PLACEHOLDERDATA = {
   }
 };
 
+const removeContextFromUrl = (context, url) => {
+  return context ? "/" + _.trimStart(url, "/" + context) : url;
+};
 export const CreateStub = props => {
   const [userEnterResponse, setUserEnterResponse] = useState(
     _.cloneDeep(PLACEHOLDERDATA.response)
@@ -33,9 +36,7 @@ export const CreateStub = props => {
   const entryNameRef = useRef();
   const urlPatternRef = useRef();
   const methodNameRef = useRef("GET");
-  useEffect(() => {
-    handleDefaultValue();
-  }, [props.initialData]);
+  const contextRef = useRef();
 
   const handleDefaultValue = () => {
     if (props.initialData && props.initialData.metadata) {
@@ -43,7 +44,10 @@ export const CreateStub = props => {
       groupNameRef.current.value = initialData.metadata.file_name;
       entryNameRef.current.value = initialData.name;
       methodNameRef.current.value = initialData.request.method;
-      urlPatternRef.current.value = initialData.request.urlPattern;
+      urlPatternRef.current.value = removeContextFromUrl(
+        props.context,
+        initialData.request.urlPattern
+      );
       setResponse(initialData.response);
       setUserEnterResponse(initialData.response);
     } else {
@@ -51,19 +55,28 @@ export const CreateStub = props => {
     }
   };
 
+  useEffect(() => {
+    handleDefaultValue();
+  }, [props.initialData]);
+
   const handleClose = () => {
     methodNameRef.current.value = "GET";
     setResponse(PLACEHOLDERDATA.response);
     props.handleClose();
   };
   const handleSave = () => {
+    const context = props.initialData.share
+      ? contextRef.current.value
+      : props.context;
     const data = {
       name: entryNameRef.current.value || Math.random() * (+100 - +1) + +1,
       metadata: {
-        file_name: groupNameRef.current.value || "unknown"
+        file_name: groupNameRef.current.value || "unknown",
+        context: context
       },
       request: {
-        urlPattern: urlPatternRef.current.value,
+        urlPattern:
+          (context ? "/" + context : "") + urlPatternRef.current.value,
         method: methodNameRef.current.value
       },
       response: userEnterResponse,
@@ -80,11 +93,13 @@ export const CreateStub = props => {
     }
     groupNameRef.current.value = seletedItem.value;
   };
-  const { groups } = props;
+  const { groups, context, initialData, contexts } = props;
   if (!groups) {
     return null;
   }
   const modeClass = props.mode === "dard" ? "dard-mode" : "";
+  const isSharingContext = initialData && initialData.share;
+
   return (
     <Modal
       size="lg"
@@ -93,15 +108,16 @@ export const CreateStub = props => {
       className={modeClass}
     >
       <Modal.Header closeButton>
-        <Modal.Title>New mock</Modal.Title>
+        <Modal.Title>
+          {isSharingContext ? "Share mock to another context" : "New mock"}
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <div className="row">
           <div className="col-sm-12">
             <div className="card">
               <div className="card-body">
-                <div className="card-header">Request
-                </div>
+                <div className="card-header">Request</div>
                 <div className="input-group mb-3 field-group-with-complete">
                   <div className="input-group-prepend">
                     <span
@@ -151,6 +167,32 @@ export const CreateStub = props => {
                       URL Pattern
                     </span>
                   </div>
+                  {context && !isSharingContext ? (
+                    <div className="input-group-prepend">
+                      <span
+                        className="input-group-text form-control"
+                        id="basic-addon1"
+                      >
+                        /{context}
+                      </span>
+                    </div>
+                  ) : (
+                    undefined
+                  )}
+
+                  {isSharingContext ? (
+                    <div className="input-group-prepend">
+                      <FormControl as="select" id="context" ref={contextRef}>
+                        {contexts.map(c => (
+                          <option value={c} key={c}>
+                            /{c}
+                          </option>
+                        ))}
+                      </FormControl>
+                    </div>
+                  ) : (
+                    undefined
+                  )}
                   <FormControl
                     type="text"
                     placeholder="/test"

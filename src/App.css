@@ -289,3 +289,24 @@ height:44px;
   position: absolute;
   right: 25px;
 }
+
+.stamp {
+  position: absolute;
+  right: 20px;
+  transform: rotate(12deg);
+	color: #55555547;
+	font-size: 1.5rem;
+	font-weight: 700;
+	border: 0.25rem solid #55555547;
+	display: inline-block;
+	padding: 0.25rem 1rem;
+	text-transform: uppercase;
+	border-radius: 1rem;
+	font-family: 'Courier';
+	-webkit-mask-image: url('../public/grunge.png');
+  -webkit-mask-size: 944px 604px;
+  mix-blend-mode: multiply;
+}
+.is-nope {
+	-webkit-mask-position: 2rem 3rem;
+}

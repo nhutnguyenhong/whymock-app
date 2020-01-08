@@ -1,10 +1,11 @@
 import React from "react";
-import {
-  ToastsContainer,
-  ToastsStore,
-  ToastsContainerPosition
-} from "react-toasts";
+// import {
+//   ToastsContainer,
+//   ToastsStore,
+//   ToastsContainerPosition
+// } from "react-toasts";
 import { Badge } from "react-bootstrap";
+import _ from "lodash";
 
 
 const statusDISABLE = "DISABLED";
@@ -51,9 +52,9 @@ export const Request = props => {
     navigator.clipboard.writeText(text).then(
       function() {
         console.log("Async: Copying to clipboard was successful!");
-        ToastsStore.success(
-          "Copying to clipboard was successful. Let mock...."
-        );
+        // ToastsStore.success(
+        //   "Copying to clipboard was successful. Let mock...."
+        // );
       },
       function(err) {
         console.error("Async: Could not copy text: ", err);
@@ -90,7 +91,7 @@ export const Request = props => {
     return content;
   };
 
-  const { node } = props;
+  const { node,context } = props;
   if (node && node.name) {
     console.log(node);
     
@@ -103,16 +104,19 @@ export const Request = props => {
             <span className="breadcrumb-item active" aria-current="page">
               {node.name}
             </span>
-            {isDisabled? <Badge className="right-align" variant="secondary" >DISABLED</Badge> : undefined}
+            { isDisabled ? <span class="stamp is-nope">DISABLED</span> : undefined }
           </ol>
         </nav>
         <HeaderComponent />
-        <ToastsContainer
+        {/* <ToastsContainer
           store={ToastsStore}
           position={ToastsContainerPosition.BOTTOM_CENTER}
-        />
+        /> */}
       </div>
     );
   }
-  return <div className="not-available">Why mock?</div>;
+  return <div className="not-available">
+    {context ? 'Hey '+ _.startCase(context)+", ": ""}
+    Why mock?
+    </div>;
 };

@@ -4,42 +4,53 @@ import FormControl from "react-bootstrap/FormControl";
 
 export default class Context extends React.Component {
   contextRef = createRef();
+  newContextRef = createRef();
 
   saveChangeHandler = () => {
     var obj = {
-      context: this.contextRef.current.value,
+      newContext: this.newContextRef.current.value,
+      chooseContext: this.contextRef.current.value 
     };
     this.props.handleSaveChanges(obj);
     this.props.handleClose();
   };
 
   render() {
-    const { mode, show, handleClose,settings } = this.props;
+    const { mode, show, handleClose,handleDefaultContext, contexts = [], context } = this.props;
     let modeClass = mode === "dard" ? "dard-mode" : "";
     modeClass += " setting-modal";
-    console.log('context',show);
-    
+
     return (
       <Modal size="lg" show={show} className={modeClass} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Context</Modal.Title>
+          <Modal.Title>Context { context ? "(currently as " + context +")": "" }</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="row">
-            <div className="col-sm-3">
-              <h3>Context</h3>
-            </div>
-            <div className="col-sm-3">
+            <div className="col-sm-12">
+              <h3>You can select existing one from:</h3>
+
               <FormControl as="select" id="theme" ref={this.contextRef}>
-                <option value='light'>Light</option>
-                <option value='dard'>Dark</option>
+                <option value="" key="empty">--Please choose context--</option>
+                {contexts.map(context => <option value={context} key={context}>{context}</option>)}
               </FormControl>
+              <br></br>
+              <h3>Or can create a new context: </h3>
+              <input  type="text"
+                className="form-control"
+                placeholder="context name"
+                aria-label="Context"
+                aria-describedby="basic-addon1"
+                ref={this.newContextRef}
+               />
+               <br></br>
             </div>
           </div>
-
-          
         </Modal.Body>
         <Modal.Footer>
+        <Button variant="dark" onClick={handleDefaultContext} style={{position: 'absolute',left:'10px'}}>
+            Back to default context
+          </Button>
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>

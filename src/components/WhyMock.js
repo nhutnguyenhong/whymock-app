@@ -50,21 +50,26 @@ export default class WhyMock extends PureComponent {
     } else {
       this.setActiveNode(node);
       //change URL:
-      const { id } = querySearch(this.props.location.search);
-      if (node.obj.id !== id) {
-        this.props.history.push({
-          pathname: "/",
-          search: `?id=${node.obj.id}`
-        });
-        console.log(
-          "set active hisro",
-          this.props.location.search,
-          node.obj.id
-        );
-      }
+      const { id, context } = querySearch(this.props.location.search);
+      this.changeHistoryUrl(node.obj.id !== id? node.obj.id : undefined, context)
     }
     this.setState({ cursor: node, data: Object.assign({}, data) });
   };
+
+  changeHistoryUrl = (id, context) => {
+      let params = [];
+      if (id) {
+      params.push(`id=${id}`);
+      }
+      if (context) {
+        params.push(`context=${context}`);
+      }
+      this.props.history.push({
+        pathname: "/",
+        search: `?${_.join(params, "&")}`
+      });
+  };
+
   setActiveNode = node => {
     this.setState({
       activeStub: node,
@@ -80,22 +85,27 @@ export default class WhyMock extends PureComponent {
     });
   };
   componentDidMount = () => {
+    this.handleContextFromURLParams();
     this.getAllMapping();
     getUserSetting(userSettings => {
       this.setState({ ...userSettings });
     });
   };
-  getAllMapping = (needReset = false) => {
-    getMappings(data => {
+  getAllMapping = (needReset = false, selectContext) => {
+    let context = selectContext? selectContext :this.getContextFromURL();
+    context = context && context === 'default'? '' : context;
+    getMappings(context? 'context=' + context : undefined,data => {
       this.updateMappings(data, needReset);
       this.handleURLParams();
     });
   };
+
   updateMappings = (data, needReset) => {
     const maps = this.prepareDataForTree(data);
-    if (maps.length > 0 || needReset) {
+    const context = this.state.context;
+    if (maps.length >= 0 || needReset) {
       this.setState({
-        data: { name: "WhyMock", toggled: true, children: [...maps] }
+        data: { name: context? _.startCase(context): "WhyMock", toggled: true, children: [...maps] }
       });
 
       //how the request
@@ -181,6 +191,11 @@ export default class WhyMock extends PureComponent {
   createStub = () => this.setState({ copyObj: null, showCreatedModal: true });
 
   importStub = () => this.setState({ copyObj: null, showImportModal: true });
+  
+  shareStub = () => this.setState({
+    copyObj: {..._.cloneDeep(this.state.cursor.obj), share:true},
+    showCreatedModal: true
+  });
 
   duplicateStub = () => {
     this.setState({
@@ -256,7 +271,16 @@ export default class WhyMock extends PureComponent {
   handleSaveNew = data =>
     createStub(data, response => {
       this.setState({ showCreatedModal: false });
-      this.addNewNodeToTree(response);
+      if(response.metadata && response.metadata.context){
+        if(this.state.context && response.metadata.context === this.state.context){
+          this.addNewNodeToTree(response);
+        }
+      }else{
+        if(!this.state.context){
+          this.addNewNodeToTree(response);
+        }
+      }
+      
     });
 
   handleSuggestedItemChanged = seletedItem => {
@@ -379,11 +403,43 @@ export default class WhyMock extends PureComponent {
     this.setState(newUserSettings);
     saveSetting(newUserSettings);
   };
+  saveContext = data => {
+    const { userSettings } = this.state;
+
+    let selectContext;
+
+    if (data.newContext) {
+      selectContext = data.newContext;
+
+      let newUserSettings = { userSettings: { ...userSettings } };
+      if (newUserSettings.userSettings["contexts"]) {
+        newUserSettings.userSettings.contexts = Array.from(
+          new Set([...newUserSettings.userSettings.contexts, data.newContext])
+        );
+      } else {
+        newUserSettings.userSettings.contexts = [data.newContext];
+      }
+      this.setState(newUserSettings);
+      saveSetting(newUserSettings);
+    }
+    if (data.chooseContext) {
+      selectContext = data.chooseContext;
+    }
+
+    if (selectContext) {
+      this.setState({ context: selectContext });
+      //get all mapping with take care context
+      this.getAllMapping(false,selectContext);
+
+      //update url
+      const { id } = querySearch(this.props.location.search);
+      this.changeHistoryUrl(id,selectContext);
+    }
+  };
 
   bookmark = node => {
     const bookmarks = this.state.bookmarks;
-    
-  }
+  };
 
   showSettingModal = () => {
     this.setState({ showSettingModal: true });
@@ -403,35 +459,59 @@ export default class WhyMock extends PureComponent {
   handleCloseContextModal = () => {
     this.setState({ showContextModal: false });
   };
+
+  handleDefaultContext = () => {
+    const { id } = querySearch(this.props.location.search);
+    this.changeHistoryUrl(id , undefined);
+    this.setState({context: undefined});
+    //get all mapping with take care context
+    this.getAllMapping(false,'default');
+    this.handleCloseContextModal();
+  }
+
+  handleContextFromURLParams = () => {
+    const context = this.getContextFromURL();
+    if (context) {
+      this.setState({ context: context });
+    }
+  };
+
+  getContextFromURL = () => {
+    const { context } = querySearch(this.props.location.search);
+    return context;
+  }
+
   componentDidUpdate() {
     if (this.state.cursor && this.state.cursor.obj) {
       const { id } = querySearch(this.props.location.search);
       if (this.state.cursor.obj.id !== id) {
         this.handleURLParams();
       }
-    } else {
-      // this.handleURLParams();
     }
+
+    this.handleContextFromURLParams();
   }
+
   render() {
-    const { data, suggestedItems } = this.state;
+    const { data, suggestedItems, context } = this.state;
     let { obj } = this.state.cursor || {};
     const {
       userSettings: { mode }
     } = this.state;
     obj = obj || { metadata: {} };
-    console.log(  this.state.showContextModal);
-    
+    console.log(context);
+
     return (
       <div className={mode === "dard" ? "dard-mode" : ""}>
         <div className="container ">
-          <div className="fullHeight">        
+          <div className="fullHeight">
             <Header
               setMode={this.setMode}
               mode={mode}
               showSettingModal={this.showSettingModal}
               showAboutModal={this.showAboutModal}
               showContextModal={this.showContextModal}
+              context={context}
             >
               <SuggestedStubs
                 suggestedItems={suggestedItems}
@@ -451,6 +531,7 @@ export default class WhyMock extends PureComponent {
                   node={this.state.activeStub}
                   theme={this.state.userSettings.jsonTheme}
                   bookmark={this.bookmark}
+                  context={this.state.context}
                 />
               </div>
             </div>
@@ -460,6 +541,7 @@ export default class WhyMock extends PureComponent {
               data={this.state.cursor}
               saveChangeHandler={this.handleSaveChange}
               mode={mode}
+              theme={this.state.userSettings.jsonTheme}
             />
             <CreateStub
               show={this.state.showCreatedModal}
@@ -468,6 +550,9 @@ export default class WhyMock extends PureComponent {
               groups={this.state.allGroups}
               initialData={this.state.copyObj}
               mode={mode}
+              theme={this.state.userSettings.jsonTheme}
+              context={this.state.context}
+              contexts={this.state.userSettings.contexts}
             />
             {/* <ImportStub
               show={this.state.showImportModal}
@@ -489,6 +574,7 @@ export default class WhyMock extends PureComponent {
               disableStub={this.disableStub}
               enableStub={this.enableStub}
               mode={mode}
+              shareStub={this.shareStub}
               importStub={this.importStub}
             />
             <Setting
@@ -503,12 +589,16 @@ export default class WhyMock extends PureComponent {
               mode={mode}
               handleClose={this.handleCloseAboutModal}
             ></About>
-            
+
             <Context
-            show={this.state.showContextModal}
-            mode={mode}
-            handleClose={this.handleCloseContextModal}
-          ></Context>         
+              show={this.state.showContextModal}
+              mode={mode}
+              handleSaveChanges={this.saveContext}
+              handleClose={this.handleCloseContextModal}
+              handleDefaultContext={this.handleDefaultContext}
+              contexts={this.state.userSettings.contexts}
+              context={this.state.context}
+            ></Context>
             <Footer />
           </div>
         </div>
@@ -516,14 +606,12 @@ export default class WhyMock extends PureComponent {
     );
   }
 }
- // <Dropdown.Item href="#/action-1" onClick={showContextModal}>
-        //   <i className="fa fa-rocket" ></i> Change
-        //   context
-        // </Dropdown.Item>
+
 const Header = ({
   children,
   setMode,
   mode,
+  context,
   showSettingModal,
   showAboutModal,
   showContextModal
@@ -536,13 +624,17 @@ const Header = ({
     <div className="col-sm-3 right-toolbar">
       <SplitButton
         alignRight
-        onClick={setMode}
-        title={mode === "dard" ? "♣" : "♠"}
+        onClick={showContextModal}
+        title={
+          "As " +( context ?  _.startCase(context) : "Mocker")
+        }
         size="sm"
         className="button-header"
         variant="secondary"
       >
-       
+        <Dropdown.Item href="#/action-1" onClick={showContextModal}>
+          <i className="fa fa-rocket"></i> Change context
+        </Dropdown.Item>
         <Dropdown.Item href="#/action-2" onClick={showSettingModal}>
           <i className="fa fa-cog"></i> Setting
         </Dropdown.Item>
@@ -569,10 +661,10 @@ const SuggestedStubs = ({ suggestedItems, onItemChanged }) => {
   ) : null;
 };
 
-const StubDetail = ({ node, theme, bookmark }) => {
+const StubDetail = ({ node, theme, bookmark,context }) => {
   return (
     <div>
-      <Request node={node} bookmark={bookmark}/>
+      <Request node={node} bookmark={bookmark} context={context}/>
       <Response node={node} theme={theme} />
     </div>
   );
@@ -587,7 +679,7 @@ const TreeItemDisplay = ({ item }) => {
   const isDisabled = status === statusDISABLE;
 
   let variant = "secondary";
-  switch(method){
+  switch (method) {
     case "GET":
       variant = "secondary";
       break;
@@ -595,11 +687,11 @@ const TreeItemDisplay = ({ item }) => {
       variant = "info";
       break;
     case "PATCH":
-        variant = "success";
-        break;
+      variant = "success";
+      break;
     case "PUT":
-        variant = "warning";
-        break;
+      variant = "warning";
+      break;
   }
   return (
     <span className={isDisabled ? " tree-item-disabled " : ""}>
