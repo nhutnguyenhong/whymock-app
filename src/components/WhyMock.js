@@ -9,13 +9,14 @@ import { Response } from "./Response";
 import { EditStub } from "./EditStub";
 import { ActionButton } from "./ActionButton";
 import { CreateStub } from "./CreateStub";
-import { ImportStub } from "./ImportStub";
+// import { ImportStub } from "./ImportStub";
 import querySearch from "stringquery";
 import Select from "react-select";
 import {
   getMappings,
   deleteStub,
   saveStub,
+  importStub,
   createStub
 } from "../services/WireMockService";
 import { TreeOfStubs } from "./TreeOfStubs";
@@ -24,6 +25,7 @@ import { saveSetting, getUserSetting } from "../services/userProfileService";
 import Setting from "./Setting";
 import About from "./About";
 import Context from "./Context";
+import GroupSharing from "./GroupSharing";
 
 const statusDISABLE = "DISABLED";
 
@@ -33,7 +35,8 @@ export default class WhyMock extends PureComponent {
     edit: false,
     delete: false,
     // mode:"light",
-    userSettings: { mode: "dard" }
+    userSettings: { mode: "dard" },
+    shareGroup:{ showModal: false}
   };
   onToggle = (node, toggled, isSetActive = true) => {
     const { cursor, data } = this.state;
@@ -51,23 +54,26 @@ export default class WhyMock extends PureComponent {
       this.setActiveNode(node);
       //change URL:
       const { id, context } = querySearch(this.props.location.search);
-      this.changeHistoryUrl(node.obj.id !== id? node.obj.id : undefined, context)
+      this.changeHistoryUrl(
+        node.obj.id !== id ? node.obj.id : undefined,
+        context
+      );
     }
     this.setState({ cursor: node, data: Object.assign({}, data) });
   };
 
   changeHistoryUrl = (id, context) => {
-      let params = [];
-      if (id) {
+    let params = [];
+    if (id) {
       params.push(`id=${id}`);
-      }
-      if (context) {
-        params.push(`context=${context}`);
-      }
-      this.props.history.push({
-        pathname: "/",
-        search: `?${_.join(params, "&")}`
-      });
+    }
+    if (context) {
+      params.push(`context=${context}`);
+    }
+    this.props.history.push({
+      pathname: "/",
+      search: `?${_.join(params, "&")}`
+    });
   };
 
   setActiveNode = node => {
@@ -92,9 +98,9 @@ export default class WhyMock extends PureComponent {
     });
   };
   getAllMapping = (needReset = false, selectContext) => {
-    let context = selectContext? selectContext :this.getContextFromURL();
-    context = context && context === 'default'? '' : context;
-    getMappings(context? 'context=' + context : undefined,data => {
+    let context = selectContext ? selectContext : this.getContextFromURL();
+    context = context && context === "default" ? "" : context;
+    getMappings(context ? "context=" + context : undefined, data => {
       this.updateMappings(data, needReset);
       this.handleURLParams();
     });
@@ -105,7 +111,11 @@ export default class WhyMock extends PureComponent {
     const context = this.state.context;
     if (maps.length >= 0 || needReset) {
       this.setState({
-        data: { name: context? _.startCase(context): "WhyMock", toggled: true, children: [...maps] }
+        data: {
+          name: context ? _.startCase(context) : "WhyMock",
+          toggled: true,
+          children: [...maps]
+        }
       });
 
       //how the request
@@ -119,13 +129,7 @@ export default class WhyMock extends PureComponent {
 
   prepareDataForTree = data => {
     //only get the stub has name
-    const dataHasName = data.mappings.filter(
-      item =>
-        item.name &&
-        item.metadata &&
-        item.metadata.file_name &&
-        item.request.method !== "OPTIONS"
-    );
+    const dataHasName = data.mappings;
     const allNames = [];
     const groupDataByFileName = dataHasName.reduce((obj, item) => {
       obj[item.metadata.file_name] = obj[item.metadata.file_name] || [];
@@ -191,12 +195,21 @@ export default class WhyMock extends PureComponent {
   createStub = () => this.setState({ copyObj: null, showCreatedModal: true });
 
   importStub = () => this.setState({ copyObj: null, showImportModal: true });
-  
-  shareStub = () => this.setState({
-    copyObj: {..._.cloneDeep(this.state.cursor.obj), share:true},
-    showCreatedModal: true
-  });
 
+  shareStub = () =>
+    this.setState({
+      copyObj: { ..._.cloneDeep(this.state.cursor.obj), share: true },
+      showCreatedModal: true
+    });
+
+  shareGroupStub = () => {
+    this.setState({
+      shareGroup: { showModal: true,
+         currentGroup: this.state.cursor.obj.metadata.file_name,
+         fromContext: this.state.cursor.obj.metadata.context
+        }
+    });
+  };
   duplicateStub = () => {
     this.setState({
       copyObj: _.cloneDeep(this.state.cursor.obj),
@@ -260,7 +273,7 @@ export default class WhyMock extends PureComponent {
 
   updateStub = stub => {
     const [dataTree, , foundTreeNode] = this.findTreeNodeAndParent(
-      item => item.obj.id == stub.id
+      item => item.obj.id === stub.id
     );
     stub.response.body = JSON.parse(stub.response.body);
     foundTreeNode.obj = stub;
@@ -271,16 +284,18 @@ export default class WhyMock extends PureComponent {
   handleSaveNew = data =>
     createStub(data, response => {
       this.setState({ showCreatedModal: false });
-      if(response.metadata && response.metadata.context){
-        if(this.state.context && response.metadata.context === this.state.context){
+      if (response.metadata && response.metadata.context) {
+        if (
+          this.state.context &&
+          response.metadata.context === this.state.context
+        ) {
           this.addNewNodeToTree(response);
         }
-      }else{
-        if(!this.state.context){
+      } else {
+        if (!this.state.context) {
           this.addNewNodeToTree(response);
         }
       }
-      
     });
 
   handleSuggestedItemChanged = seletedItem => {
@@ -288,7 +303,7 @@ export default class WhyMock extends PureComponent {
       return;
     }
     const [, foundGroupTreeNode, foundTreeNode] = this.findTreeNodeAndParent(
-      item => item.hashSuggestedId == seletedItem.value
+      item => item.hashSuggestedId === seletedItem.value
     );
 
     this.onToggle(foundGroupTreeNode, true, false);
@@ -300,7 +315,7 @@ export default class WhyMock extends PureComponent {
       return;
     }
     const [, foundGroupTreeNode, foundTreeNode] = this.findTreeNodeAndParent(
-      item => item.obj.id == id
+      item => item.obj.id === id
     );
 
     this.onToggle(foundGroupTreeNode, true, false);
@@ -358,7 +373,7 @@ export default class WhyMock extends PureComponent {
       const foundItem = this.state.allGroups.find(
         item => item.value === foundGroup.name
       );
-      if (!foundItem || foundItem.length == 0) {
+      if (!foundItem || foundItem.length === 0) {
         this.setState({
           allGroups: [
             ...this.state.allGroups,
@@ -429,16 +444,50 @@ export default class WhyMock extends PureComponent {
     if (selectContext) {
       this.setState({ context: selectContext });
       //get all mapping with take care context
-      this.getAllMapping(false,selectContext);
+      this.getAllMapping(false, selectContext);
 
       //update url
       const { id } = querySearch(this.props.location.search);
-      this.changeHistoryUrl(id,selectContext);
+      this.changeHistoryUrl(id, selectContext);
     }
   };
 
+  removeContextFromUrl = (context, url) => {
+    return context ? "/" + _.trimStart(url, "/" + context) : url;
+  };
+  
+  shareGroup = data =>{
+    let stubs = this.state.data.children.find(item=>item.name === data.fromGroup);
+    if(stubs && stubs.children){
+      stubs = stubs.children;
+      stubs = stubs.map(d=> {
+        return{
+          name: d.obj.name,
+          metadata: {
+            file_name: d.obj.metadata.file_name,
+            context: data.shareContext
+          },
+          request: {
+            urlPattern:
+            "/"+data.shareContext+this.removeContextFromUrl(this.state.context,d.obj.request.urlPattern),
+            method: d.obj.request.method
+          },
+          response: {
+            ...d.obj.response,
+            body: JSON.stringify(d.obj.response.body),
+          },
+          persistent: true
+        };
+       
+      });
+    }
+    importStub({mappings:stubs,importOptions:{duplicatePolicy:"IGNORE",deleteAllNotInImport:false}},()=>{
+      this.setState({shareGroup:{showModal:false}});
+    });
+  };
+
   bookmark = node => {
-    const bookmarks = this.state.bookmarks;
+    // const bookmarks = this.state.bookmarks;
   };
 
   showSettingModal = () => {
@@ -459,15 +508,19 @@ export default class WhyMock extends PureComponent {
   handleCloseContextModal = () => {
     this.setState({ showContextModal: false });
   };
+  handleCloseGroupSharingModal = () =>{
+    this.setState({ shareGroup:{showModal: false} });
+
+  };
 
   handleDefaultContext = () => {
     const { id } = querySearch(this.props.location.search);
-    this.changeHistoryUrl(id , undefined);
-    this.setState({context: undefined});
+    this.changeHistoryUrl(id, undefined);
+    this.setState({ context: undefined });
     //get all mapping with take care context
-    this.getAllMapping(false,'default');
+    this.getAllMapping(false, "default");
     this.handleCloseContextModal();
-  }
+  };
 
   handleContextFromURLParams = () => {
     const context = this.getContextFromURL();
@@ -479,7 +532,7 @@ export default class WhyMock extends PureComponent {
   getContextFromURL = () => {
     const { context } = querySearch(this.props.location.search);
     return context;
-  }
+  };
 
   componentDidUpdate() {
     if (this.state.cursor && this.state.cursor.obj) {
@@ -575,6 +628,7 @@ export default class WhyMock extends PureComponent {
               mode={mode}
               shareStub={this.shareStub}
               importStub={this.importStub}
+              shareGroupStub={this.shareGroupStub}
             />
             <Setting
               show={this.state.showSettingModal}
@@ -598,6 +652,16 @@ export default class WhyMock extends PureComponent {
               contexts={this.state.userSettings.contexts}
               context={this.state.context}
             ></Context>
+            <GroupSharing
+              show={this.state.shareGroup.showModal}
+              mode={mode}
+              handleSaveChanges={this.shareGroup}
+              handleClose={this.handleCloseGroupSharingModal}
+              contexts={this.state.userSettings.contexts}
+              context={this.state.context}
+              currentGroup={this.state.shareGroup.currentGroup}
+              fromContext={this.state.shareGroup.fromContext}
+            />
             <Footer />
           </div>
         </div>
@@ -624,9 +688,7 @@ const Header = ({
       <SplitButton
         alignRight
         onClick={showContextModal}
-        title={
-          "As " +( context ?  _.startCase(context) : "Mocker")
-        }
+        title={"As " + (context ? _.startCase(context) : "Mocker")}
         size="sm"
         className="button-header"
         variant="secondary"
@@ -660,10 +722,10 @@ const SuggestedStubs = ({ suggestedItems, onItemChanged }) => {
   ) : null;
 };
 
-const StubDetail = ({ node, theme, bookmark,context }) => {
+const StubDetail = ({ node, theme, bookmark, context }) => {
   return (
     <div>
-      <Request node={node} bookmark={bookmark} context={context}/>
+      <Request node={node} bookmark={bookmark} context={context} />
       <Response node={node} theme={theme} />
     </div>
   );

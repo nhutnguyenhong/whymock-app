@@ -24,6 +24,15 @@ export const saveStub = (stub, callback) => {
   });
 };
 
+export const importStub = (stubs, callback) => {
+  fetch(WMurl + "/__admin/mappings/import", {
+    method: "POST",
+    body: JSON.stringify(stubs)
+  }).then(response => {
+    callback();
+  });
+};
+
 export const createStub = (data, callback) => {
   createOptionStub(data);
   createSpecificStub(data,callback);

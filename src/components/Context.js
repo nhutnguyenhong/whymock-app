@@ -14,7 +14,12 @@ export default class Context extends React.Component {
     this.props.handleSaveChanges(obj);
     this.props.handleClose();
   };
-
+  getCurrentURL = ()=>{
+    var url = window.location.href;
+  var arr = url.split("/");
+  var result = arr[0] + "//" + arr[2];
+  return result;
+  }
   render() {
     const { mode, show, handleClose,handleDefaultContext, contexts = [], context } = this.props;
     let modeClass = mode === "dard" ? "dard-mode" : "";

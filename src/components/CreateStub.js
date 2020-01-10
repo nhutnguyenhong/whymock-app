@@ -93,7 +93,7 @@ export const CreateStub = props => {
     }
     groupNameRef.current.value = seletedItem.value;
   };
-  const { groups, context, initialData, contexts } = props;
+  const { groups, context, initialData, contexts=[] } = props;
   if (!groups) {
     return null;
   }
