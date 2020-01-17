@@ -23,7 +23,13 @@ export const saveStub = (stub, callback) => {
     callback();
   });
 };
-
+export const resetMapings = (callback) => {
+  fetch(WMurl + "/__admin/mappings/reset", {
+    method: "POST",
+  }).then(response => {
+    callback();
+  });
+};
 export const importStub = (stubs, callback) => {
   fetch(WMurl + "/__admin/mappings/import", {
     method: "POST",

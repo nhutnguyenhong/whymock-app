@@ -47,7 +47,7 @@ export const CreateStub = props => {
       urlPatternRef.current.value = removeContextFromUrl(
         props.context,
         initialData.request.urlPattern
-      );
+      ) || '';
       setResponse(initialData.response);
       setUserEnterResponse(initialData.response);
     } else {

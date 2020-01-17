@@ -3,6 +3,7 @@ import { Modal, Button } from "react-bootstrap";
 import FormControl from "react-bootstrap/FormControl";
 import _ from "lodash";
 import { Badge } from "react-bootstrap";
+import { Alert } from "react-bootstrap";
 
 export default class GroupSharing extends React.Component {
   contextRef = createRef();
@@ -25,8 +26,8 @@ export default class GroupSharing extends React.Component {
       handleDefaultContext,
       contexts = [],
       context,
-      currentGroup
-      ,fromContext = "Default"
+      currentGroup,
+      fromContext = "Default"
     } = this.props;
     let modeClass = mode === "dard" ? "dard-mode" : "";
     modeClass += " setting-modal";
@@ -41,30 +42,49 @@ export default class GroupSharing extends React.Component {
         </Modal.Header>
         <Modal.Body>
           <div className="row">
-            <div className="col-sm-12">
-              <h3>You are sharing the group {" "}
-              <Badge variant="success" className="method-badge">
-                {currentGroup}
-              </Badge>from the context{" "}
-              <Badge variant="success" className="method-badge">
-                {fromContext}
-              </Badge>to another context with name: </h3>
-              <FormControl as="select" id="theme" ref={this.contextRef}>
-                <option value="" key="empty">
-                  --Please choose context--
-                </option>
-                {contexts.map(context => (
-                  <option value={context} key={context}>
-                    {context}
+            <div className="col-sm-5">
+              <Alert
+                key="fromGroup"
+                variant="dark"
+                className="share-group-alert"
+              >
+                You are sharing the group <br></br>
+                <Badge variant="success" className="method-badge">
+                  {currentGroup}
+                </Badge>
+              </Alert>
+            </div>
+            <div className="col-sm-2">
+              <Alert
+                key="fromGroup"
+                variant="dark"
+                className="share-group-alert share-group-alert-separator"
+              > to <br></br>
+                <i className="fa fa-arrow-right" />
+              </Alert>
+            </div>
+            <div className="col-sm-5">
+              <Alert
+                key="fromGroup"
+                variant="dark"
+                className="share-group-alert"
+              >
+                to another context with name <br></br>
+                <FormControl as="select" id="theme" ref={this.contextRef}>
+                  <option value="" key="empty">
+                    --Please choose context--
                   </option>
-                ))}
-              </FormControl>
-              
+                  {contexts.map(context => (
+                    <option value={context} key={context}>
+                      {context}
+                    </option>
+                  ))}
+                </FormControl>
+              </Alert>
             </div>
           </div>
         </Modal.Body>
         <Modal.Footer>
-         
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>

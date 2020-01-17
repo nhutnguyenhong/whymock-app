@@ -93,11 +93,11 @@ export const ActionButton = ({
           href="#"
           tooltip="Disable this stub"
           styles={{
-            backgroundColor: darkColors.black,
+            backgroundColor: darkColors.orange,
             color: lightColors.purple
           }}
           onClick={disableStub}
-          icon="fa fa-eye-slash"
+          icon="fa fa-ban"
         />
       )}
       {hasDelete && (

@@ -17,7 +17,8 @@ import {
   deleteStub,
   saveStub,
   importStub,
-  createStub
+  createStub,
+  resetMapings
 } from "../services/WireMockService";
 import { TreeOfStubs } from "./TreeOfStubs";
 import { SplitButton, Dropdown, Badge } from "react-bootstrap";
@@ -192,7 +193,13 @@ export default class WhyMock extends PureComponent {
 
   editStub = () => this.setState({ show: true });
 
-  createStub = () => this.setState({ copyObj: null, showCreatedModal: true });
+  createStub = () => {
+    let copyObj = null;
+    if(this.state.cursor && this.state.cursor.obj && this.state.cursor.obj.metadata ){
+      copyObj = {name:"",request:{method:"GET"},metadata:{file_name: this.state.cursor.obj.metadata.file_name}}
+    }
+    this.setState({ copyObj, showCreatedModal: true });
+  };
 
   importStub = () => this.setState({ copyObj: null, showImportModal: true });
 
@@ -262,7 +269,9 @@ export default class WhyMock extends PureComponent {
     const stub = { ...this.state.cursor.obj };
     stub.request = request || stub.request;
     stub.response = response || stub.response;
-    stub.response.body = JSON.stringify(stub.response.body);
+    if(typeof(stub.response.body) === 'object'){
+      stub.response.body = JSON.stringify(stub.response.body);
+    }
     stub.name = name || stub.name;
 
     saveStub(stub, () => {
@@ -545,6 +554,12 @@ export default class WhyMock extends PureComponent {
     this.handleContextFromURLParams();
   }
 
+  refreshStubs = ()=>{
+    resetMapings(()=>{
+      this.getAllMapping();
+    });
+  };
+
   render() {
     const { data, suggestedItems, context } = this.state;
     let { obj } = this.state.cursor || {};
@@ -564,6 +579,7 @@ export default class WhyMock extends PureComponent {
               showAboutModal={this.showAboutModal}
               showContextModal={this.showContextModal}
               context={context}
+              refreshStubs={this.refreshStubs}
             >
               <SuggestedStubs
                 suggestedItems={suggestedItems}
@@ -677,7 +693,8 @@ const Header = ({
   context,
   showSettingModal,
   showAboutModal,
-  showContextModal
+  showContextModal,
+  refreshStubs
 }) => (
   <div className="row header-row">
     <div className="col-sm-3 header-img">
@@ -695,6 +712,9 @@ const Header = ({
       >
         <Dropdown.Item href="#/action-1" onClick={showContextModal}>
           <i className="fa fa-rocket"></i> Change context
+        </Dropdown.Item>
+        <Dropdown.Item href="#/action-1" onClick={refreshStubs}>
+          <i className="fa fa-refresh"></i> Refresh
         </Dropdown.Item>
         <Dropdown.Item href="#/action-2" onClick={showSettingModal}>
           <i className="fa fa-cog"></i> Setting
