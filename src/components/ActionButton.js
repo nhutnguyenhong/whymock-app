@@ -1,14 +1,31 @@
 import React from "react";
+import _ from "lodash";
+
 import {
   Container,
   Button,
   lightColors,
   darkColors
 } from "react-floating-action-button";
+import { connect } from "react-redux";
+import { statusDISABLE } from "../constant/index";
+import {
+  editStubModal,
+createStub,
+deleteStub,
+duplicateStub,
+disableStub,
+enableStub,
+shareStub,
+importStub,
+shareGroupStub,
+exportStub,
+exportGroup,
+} from '../actions';
 
-export const ActionButton = ({
+const ActionButton = ({
+  selectedNode,
   edit,
-  importStub,
   enable,
   disable,
   hasDelete,
@@ -19,20 +36,13 @@ export const ActionButton = ({
   disableStub,
   enableStub,
   shareStub,
-  shareGroupStub
+  shareGroupStub,
+  isGroupSelected,
+  exportStub,
+  exportGroup
 }) => {
   return (
     <Container>
-      {/* <Button
-        href="#"
-        tooltip="Import a HAR"
-        styles={{
-          backgroundColor: darkColors.cyan,
-          color: lightColors.white
-        }}
-        onClick={importStub}
-        icon="fa fa-cloud-upload"
-      /> */}
       <Button
         href="#"
         tooltip="Create new stub"
@@ -51,7 +61,7 @@ export const ActionButton = ({
             backgroundColor: darkColors.cyan,
             color: lightColors.white
           }}
-          onClick={duplicateStub}
+          onClick={()=>duplicateStub(selectedNode.obj)}
           icon="fa fa-copy"
         />
       )}
@@ -104,7 +114,7 @@ export const ActionButton = ({
         <Button
           href="#"
           tooltip="Share this stub to context"
-          onClick={shareStub}
+          onClick={()=>shareStub(selectedNode)}
           icon="fa fa-share"
           styles={{
             backgroundColor: darkColors.cyan,
@@ -112,11 +122,35 @@ export const ActionButton = ({
           }}
         />
       )}
-       {hasDelete && (
+      {hasDelete && (
+        <Button
+          href="#"
+          tooltip="Download the stub"
+          onClick={exportStub}
+          icon="fa fa-cloud-download"
+          styles={{
+            backgroundColor: darkColors.cyan,
+            color: lightColors.white
+          }}
+        />
+      )}
+      {isGroupSelected && (
+        <Button
+          href="#"
+          tooltip="Download the group"
+          onClick={exportGroup}
+          icon="fa fa-cloud-download"
+          styles={{
+            backgroundColor: darkColors.cyan,
+            color: lightColors.white
+          }}
+        />
+      )}
+      {isGroupSelected && (
         <Button
           href="#"
           tooltip="Share group to context"
-          onClick={shareGroupStub}
+          onClick={()=>shareGroupStub(selectedNode)}
           icon="fa fa-share-square-o"
           styles={{
             backgroundColor: darkColors.cyan,
@@ -137,3 +171,27 @@ export const ActionButton = ({
     </Container>
   );
 };
+
+export default connect(
+  ({ ui: { selectedNode } }) => ({
+    selectedNode: selectedNode,
+    edit: !selectedNode.children && selectedNode.hashId,
+    hasDelete: !selectedNode.children && selectedNode.hashId,
+    disable: _.get(selectedNode, "obj.metadata.status", "") === statusDISABLE,
+    enable: !selectedNode.children && selectedNode.hashId && _.get(selectedNode, "obj.metadata.status", "") !== statusDISABLE,
+    isGroupSelected: true && selectedNode.children
+  }),
+  {
+    editStub:editStubModal,
+    createStub,
+    deleteStub,
+    duplicateStub,
+    disableStub,
+    enableStub,
+    shareStub,
+    importStub,
+    shareGroupStub,
+    exportStub,
+    exportGroup
+  }
+)(ActionButton);

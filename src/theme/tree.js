@@ -21,7 +21,8 @@ export const darkTheme =  {
                 display: 'block'
             },
             activeLink: {
-                background: 'rgb(28, 38, 54)',
+                background: 'rgb(28, 38, 54)'
+                
             },
             toggle: {
                 base: {
@@ -100,7 +101,9 @@ export const lightTheme =  {
                 display: 'block'
             },
             activeLink: {
-                background: '#c2c2c2'
+                background: '#c6ced6',
+                borderRadius:'6px',
+                animation:'fadein 0.4s'
             },
             toggle: {
                 base: {

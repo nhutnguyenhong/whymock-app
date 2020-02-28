@@ -2,27 +2,32 @@ import React, { createRef } from "react";
 import { Modal, Button } from "react-bootstrap";
 import FormControl from "react-bootstrap/FormControl";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
+import { connect } from "react-redux";
+import {hideSettingModal,updateUserSetting} from '../actions';
 
-export default class Setting extends React.Component {
+class Setting extends React.Component {
   themeRef = createRef();
   jsonthemeRef = createRef();
+  jsoneditthemeRef = createRef();
 
   saveChangeHandler = () => {
     var obj = {
       mode: this.themeRef.current.value,
       jsonTheme: this.jsonthemeRef.current.value,
+      jsonEditTheme: this.jsoneditthemeRef.current.value,
       confirmOnDelete: this.state ? this.state.confirmOnDelete : true,
     };
-    this.props.handleSaveChanges(obj);
-    this.props.handleClose();
+    this.props.updateUserSetting(obj);
+    this.props.hideSettingModal();
   };
 
   render() {
-    const { mode, show, handleClose,settings } = this.props;
+    const { mode, show, hideSettingModal,settings } = this.props;
+
     let modeClass = mode === "dard" ? "dard-mode" : "";
     modeClass += " setting-modal";
     return (
-      <Modal size="lg" show={show} className={modeClass} onHide={handleClose}>
+      <Modal size="lg" show={show} className={modeClass} onHide={hideSettingModal}>
         <Modal.Header closeButton>
           <Modal.Title>Settings</Modal.Title>
         </Modal.Header>
@@ -41,7 +46,7 @@ export default class Setting extends React.Component {
 
           <div className="row">
             <div className="col-sm-3">
-              <h3>JSON theme</h3>
+              <h3>JSON view theme</h3>
             </div>
             <div className="col-sm-3">
               <FormControl as="select" id="jsontheme" ref={this.jsonthemeRef} defaultValue={settings.jsonTheme}>
@@ -91,6 +96,25 @@ export default class Setting extends React.Component {
           </div>
           <div className="row">
             <div className="col-sm-3">
+              <h3>JSON edit theme</h3>
+            </div>
+            <div className="col-sm-4">
+              <FormControl as="select" id="jsonedittheme" ref={this.jsoneditthemeRef} defaultValue={settings.jsoneditTheme}>
+                <option>dark_vscode_tribute</option>
+                <option>light_mitsuketa_tribute</option>
+              </FormControl>
+            </div>
+            <div className="col-sm-3 vertical-middle">
+              <a
+                target="_blank"
+                href="https://github.com/AndrewRedican/react-json-editor-ajrm/wiki/Built-In-Themes"
+              >
+                <i className="fa fa-question"></i>
+              </a>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-sm-3">
               <h3>Confirm on delete</h3>
             </div>
             <div className="col-sm-5">
@@ -108,7 +132,7 @@ export default class Setting extends React.Component {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button variant="secondary" onClick={hideSettingModal}>
             Close
           </Button>
           <Button variant="primary" onClick={this.saveChangeHandler}>
@@ -119,3 +143,15 @@ export default class Setting extends React.Component {
     );
   }
 }
+
+export default  connect(
+  (state)=>({
+    mode: state.userSettings.mode,
+    settings: state.userSettings,
+    show: state.modal.setting.show,
+  }),
+  {
+    hideSettingModal,
+    updateUserSetting,
+  }
+)(Setting);

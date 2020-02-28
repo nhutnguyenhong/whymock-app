@@ -1,12 +1,11 @@
+import { Observable } from "rxjs";
+import Axios from "axios-observable";
+import { from, of } from "rxjs";
+
 import { WMurl } from "../constant";
 
-export const getMappings = (parameters,callback)=> {
-  fetch(WMurl + '/__admin/mappings' +(parameters? '?' + parameters : ''))
-    .then(res => res.json())
-    .then(data => {
-      callback(data);
-    })
-    .catch(console.log);
+export const $getMappings = (parameters) => {
+    return Axios.get(WMurl + "/__admin/mappings" + (parameters ? "?" + parameters : ""));
 };
 export const deleteStub = (stubId, callback) => {
   fetch(WMurl + "/__admin/mappings/" + stubId, {
@@ -15,6 +14,11 @@ export const deleteStub = (stubId, callback) => {
     callback();
   });
 };
+
+export const $deleteStub = (stubId) => {
+  return Axios.delete(WMurl + "/__admin/mappings/" + stubId);
+};
+
 export const saveStub = (stub, callback) => {
   fetch(WMurl + "/__admin/mappings/" + stub.id, {
     method: "PUT",
@@ -23,12 +27,15 @@ export const saveStub = (stub, callback) => {
     callback();
   });
 };
-export const resetMapings = (callback) => {
-  fetch(WMurl + "/__admin/mappings/reset", {
-    method: "POST",
-  }).then(response => {
-    callback();
-  });
+
+export const $saveStub = (stub) => {
+ 
+  return Axios.put(WMurl + "/__admin/mappings/" + stub.id,stub);
+
+};
+export const $resetMapping = () => {
+  return Axios.post(WMurl + "/__admin/mappings/reset");
+
 };
 export const importStub = (stubs, callback) => {
   fetch(WMurl + "/__admin/mappings/import", {
@@ -39,28 +46,20 @@ export const importStub = (stubs, callback) => {
   });
 };
 
-export const createStub = (data, callback) => {
-  createOptionStub(data);
-  createSpecificStub(data,callback);
-};
-const createSpecificStub = (data, callback) => {
-  fetch(WMurl + "/__admin/mappings/", {
-    method: "POST",
-    body: JSON.stringify(data)
-  }).then(response => {
-    response.json().then(body=>callback(body));
-  });
-};
-const createOptionStub = (data) => {
-  const optionData = {...data};
-  optionData.request = {...data.request};
-  optionData.request.method='OPTIONS';
-  optionData.persistent=false;
-  fetch(WMurl + "/__admin/mappings/", {
-    method: "POST",
-    body: JSON.stringify(optionData)
-  }).then(response => {
-    
-  });
+export const $importStub = (stubs) => {
+  return Axios.post(WMurl + "/__admin/mappings/import", stubs);
 };
 
+export const createStub = data => {
+ return of(createOptionStub(data), createSpecificStub(data));
+}
+const createSpecificStub = (data, callback) => {
+  return Axios.post(WMurl + "/__admin/mappings/", data);
+};
+const createOptionStub = data => {
+  const optionData = { ...data };
+  optionData.request = { ...data.request };
+  optionData.request.method = "OPTIONS";
+  optionData.persistent = false;
+  return Axios.post(WMurl + "/__admin/mappings/", optionData);
+};

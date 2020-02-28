@@ -6,6 +6,8 @@ import Select from "react-select";
 import { useState, useEffect, useRef } from "react";
 import FormControl from "react-bootstrap/FormControl";
 import _ from "lodash";
+import { connect } from "react-redux";
+import { hideCreateStub,createNewStub } from "../actions";
 
 const PLACEHOLDERDATA = {
   request: {
@@ -24,7 +26,7 @@ const PLACEHOLDERDATA = {
 const removeContextFromUrl = (context, url) => {
   return context ? "/" + _.trimStart(url, "/" + context) : url;
 };
-export const CreateStub = props => {
+const CreateStub = props => {
   const [userEnterResponse, setUserEnterResponse] = useState(
     _.cloneDeep(PLACEHOLDERDATA.response)
   );
@@ -44,10 +46,9 @@ export const CreateStub = props => {
       groupNameRef.current.value = initialData.metadata.file_name;
       entryNameRef.current.value = initialData.name;
       methodNameRef.current.value = initialData.request.method;
-      urlPatternRef.current.value = removeContextFromUrl(
-        props.context,
-        initialData.request.urlPattern
-      ) || '';
+      urlPatternRef.current.value =
+        removeContextFromUrl(props.context, initialData.request.urlPattern) ||
+        "";
       setResponse(initialData.response);
       setUserEnterResponse(initialData.response);
     } else {
@@ -65,14 +66,15 @@ export const CreateStub = props => {
     props.handleClose();
   };
   const handleSave = () => {
-    const context = props.initialData && props.initialData.share
-      ? contextRef.current.value
-      : props.context;
+    const context =
+      props.initialData && props.initialData.share
+        ? contextRef.current.value
+        : props.context;
     const data = {
       name: entryNameRef.current.value || Math.random() * (+100 - +1) + +1,
       metadata: {
         file_name: groupNameRef.current.value || "unknown",
-        context: context
+        context: context?context:undefined,
       },
       request: {
         urlPattern:
@@ -85,7 +87,8 @@ export const CreateStub = props => {
     if (typeof data.response.body !== "string") {
       data.response.body = JSON.stringify(data.response.body);
     }
-    props.saveChangeHandler(data);
+    props.createNewStub(data);
+    handleClose();
   };
   const selectGroup = seletedItem => {
     if (seletedItem.value <= 0) {
@@ -93,13 +96,14 @@ export const CreateStub = props => {
     }
     groupNameRef.current.value = seletedItem.value;
   };
-  const { groups, context, initialData, contexts=[] } = props;
+  const { groups, context, initialData, contexts = [] } = props;
   if (!groups) {
     return null;
   }
   const modeClass = props.mode === "dard" ? "dard-mode" : "";
+  const jsonEditTheme = props.jsonEditTheme || "dark_vscode_tribute";
   const isSharingContext = initialData && initialData.share;
-
+console.log("show",props.show);
   return (
     <Modal
       size="lg"
@@ -228,6 +232,7 @@ export const CreateStub = props => {
                 <div className="card-header">Response</div>
 
                 <JSONInput
+                  theme={jsonEditTheme}
                   id="b_unique_id"
                   placeholder={response}
                   locale={locale}
@@ -253,3 +258,17 @@ export const CreateStub = props => {
     </Modal>
   );
 };
+
+export default connect(
+  state => ({
+    mode: state.userSettings.mode,
+    theme: state.userSettings.jsonTheme,
+    show: state.modal.create.show,
+    initialData: state.modal.create.copyObj,
+    context:state.context,
+    contexts: state.userSettings.contexts,
+    jsonEditTheme: state.userSettings.jsonEditTheme,
+    groups: state.ui.groupNames,
+  }),
+  { handleClose: hideCreateStub,createNewStub }
+)(CreateStub);

@@ -1,13 +1,16 @@
 import React from "react";
 import { Modal, Button } from "react-bootstrap";
+import { connect } from "react-redux";
 
-export default class About extends React.Component {
+import {hideAboutModal} from '../actions';
+
+class About extends React.Component {
   render() {
-    const { mode, show, handleClose } = this.props;
+    const { mode, show, hideAboutModal } = this.props;
     let modeClass = mode === "dard" ? "dard-mode" : "";
     modeClass += " setting-modal";
     return (
-      <Modal size="lg" show={show} className={modeClass} onHide={handleClose}>
+      <Modal size="lg" show={show} className={modeClass} onHide={hideAboutModal}>
         <Modal.Header closeButton>
           <Modal.Title>About</Modal.Title>
         </Modal.Header>
@@ -25,7 +28,7 @@ export default class About extends React.Component {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button variant="secondary" onClick={hideAboutModal}>
             Close
           </Button>
         </Modal.Footer>
@@ -33,3 +36,13 @@ export default class About extends React.Component {
     );
   }
 }
+
+export default connect(
+  ({modal,userSettings})=>({
+    show: modal.about.show,
+    mode: userSettings.mode,
+  }),
+  {
+    hideAboutModal
+  }
+)(About);

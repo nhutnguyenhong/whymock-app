@@ -1,16 +1,10 @@
 import React from "react";
-// import {
-//   ToastsContainer,
-//   ToastsStore,
-//   ToastsContainerPosition
-// } from "react-toasts";
-import { Badge } from "react-bootstrap";
 import _ from "lodash";
-
+import { connect } from "react-redux";
 
 const statusDISABLE = "DISABLED";
 
-export const Request = props => {
+const Request = props => {
   var url = window.location.href;
   var arr = url.split("/");
   var result = arr[0] + "//" + arr[2];
@@ -34,7 +28,6 @@ export const Request = props => {
 
     try {
       var successful = document.execCommand("copy");
-      var msg = successful ? "successful" : "unsuccessful";
     } catch (err) {
       console.error("Fallback: Oops, unable to copy", err);
     }
@@ -65,6 +58,7 @@ export const Request = props => {
         obj: { request }
       }
     } = props;
+    console.log("request",request);
     let content =
       request !== undefined ? (
         <table className="table">
@@ -75,7 +69,7 @@ export const Request = props => {
             </tr> */}
             <tr>
               <td>
-                <button onClick={copy} className="btn btn-secondary btn-sm">
+                <button onClick={copy} className="btn btn-info btn-sm">
                   <i className="fa fa-copy" />
                 </button>
                 {"  " + result + request.urlPattern}
@@ -89,9 +83,8 @@ export const Request = props => {
     return content;
   };
 
-  const { node,context } = props;
+  const { node, context } = props;
   if (node && node.name) {
-    
     const { status } = node.obj.metadata;
     const isDisabled = status === statusDISABLE;
     return (
@@ -101,7 +94,11 @@ export const Request = props => {
             <span className="breadcrumb-item active" aria-current="page">
               {node.name}
             </span>
-            { isDisabled ? <span className="stamp is-nope">DISABLED</span> : undefined }
+            {isDisabled ? (
+              <span className="stamp is-nope">DISABLED</span>
+            ) : (
+              undefined
+            )}
           </ol>
         </nav>
         <HeaderComponent />
@@ -112,8 +109,16 @@ export const Request = props => {
       </div>
     );
   }
-  return <div className="not-available">
-    {context ? 'Hey '+ _.startCase(context)+", ": ""}
-    Why mock?
-    </div>;
+  return (
+    <div className="not-available">
+      {context ? "Hey " + _.startCase(context) + ", " : ""}
+      Why mock?
+    </div>
+  );
 };
+
+export default connect(state => ({
+  node:state.ui.selectedNode.children? undefined: state.ui.selectedNode,
+  context: state.context,
+
+}))(Request);

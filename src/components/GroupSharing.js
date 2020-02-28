@@ -4,15 +4,18 @@ import FormControl from "react-bootstrap/FormControl";
 import _ from "lodash";
 import { Badge } from "react-bootstrap";
 import { Alert } from "react-bootstrap";
+import { connect } from "react-redux";
+import {hideshareGroupStub,shareGroup} from '../actions';
 
-export default class GroupSharing extends React.Component {
+class GroupSharing extends React.Component {
   contextRef = createRef();
   newContextRef = createRef();
 
   saveChangeHandler = () => {
     var obj = {
       shareContext: this.contextRef.current.value,
-      fromGroup: this.props.currentGroup
+      fromGroup: this.props.currentGroup,
+      currentNode: this.props.currentNode,
     };
     this.props.handleSaveChanges(obj);
     this.props.handleClose();
@@ -23,15 +26,14 @@ export default class GroupSharing extends React.Component {
       mode,
       show,
       handleClose,
-      handleDefaultContext,
       contexts = [],
       context,
       currentGroup,
+      currentNode={},
       fromContext = "Default"
     } = this.props;
     let modeClass = mode === "dard" ? "dard-mode" : "";
     modeClass += " setting-modal";
-    console.log(context);
 
     return (
       <Modal size="lg" show={show} className={modeClass} onHide={handleClose}>
@@ -49,9 +51,11 @@ export default class GroupSharing extends React.Component {
                 className="share-group-alert"
               >
                 You are sharing the group <br></br>
-                <Badge variant="success" className="method-badge">
+                {currentNode.rootNode?<Badge variant="warning" className="method-badge">
                   {currentGroup}
-                </Badge>
+                </Badge>:<Badge variant="success" className="method-badge">
+                  {currentGroup}
+                </Badge>}
               </Alert>
             </div>
             <div className="col-sm-2">
@@ -69,7 +73,7 @@ export default class GroupSharing extends React.Component {
                 variant="dark"
                 className="share-group-alert"
               >
-                to another context with name <br></br>
+                another context with name <br></br>
                 <FormControl as="select" id="theme" ref={this.contextRef}>
                   <option value="" key="empty">
                     --Please choose context--
@@ -96,3 +100,19 @@ export default class GroupSharing extends React.Component {
     );
   }
 }
+
+export default connect(
+  ({ context, modal, userSettings ,ui}) => ({
+    show: modal.shareGroup.show,
+    mode: userSettings.mode,
+    contexts: userSettings.contexts,
+    context,
+    currentGroup: modal.shareGroup.currentGroup,
+    fromContext: modal.shareGroup.fromContext, 
+    currentNode:ui.selectedNode,
+  }),
+  {
+    handleClose: hideshareGroupStub,
+    handleSaveChanges:shareGroup,
+  }
+)(GroupSharing);

@@ -1,9 +1,12 @@
 import React, { Component } from "react";
-import 'react-perfect-scrollbar/dist/css/styles.css';
+import "react-perfect-scrollbar/dist/css/styles.css";
+import { BrowserRouter } from "react-router-dom";
+import { Route } from "react-router";
+
 import "./App.css";
+
 import WhyMock from "./components/WhyMock";
-import {BrowserRouter} from "react-router-dom";
-import {Route} from 'react-router';
+
 class App extends Component {
   render() {
     return (

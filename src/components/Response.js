@@ -1,9 +1,10 @@
 import React from "react";
 import ReactJson from "react-json-view";
 import PerfectScrollbar from 'react-perfect-scrollbar';
+import { connect } from "react-redux";
 
 const ignoredHeaders = ["Access-Control-Allow-Origin","Access-Control-Allow-Methods","Access-Control-Allow-Headers"];
-export const Response = ({ node, theme }) => {
+const Response = ({ node, theme }) => {
   
   if (node && node.obj) {
     Object.keys(node.obj.response.headers).filter(header=> {
@@ -34,3 +35,10 @@ export const Response = ({ node, theme }) => {
   }
   return null;
 };
+
+export default connect(state => ({
+  node:state.ui.selectedNode.children? undefined: state.ui.selectedNode,
+  context: state.context,
+  theme: state.userSettings.jsonTheme,
+
+}))(Response);

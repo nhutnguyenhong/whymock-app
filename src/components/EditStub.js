@@ -6,8 +6,10 @@ import _ from "lodash";
 
 import { useState, useEffect } from "react";
 import { ButtonGroup } from "react-bootstrap";
+import { connect } from "react-redux";
+import { hideEditStub, editStub } from "../actions";
 
-export const EditStub = props => {
+const EditStub = props => {
   const [initializeRequestValue, setInitializeRequestValue] = useState(
     props.data && props.data.obj ? props.data.obj.request : {}
   );
@@ -51,13 +53,13 @@ export const EditStub = props => {
         responseValue = JSON.parse(`${responseRawRef.current.value}`);
       }
     }
-    console.log(requestValue, responseValue);
 
     if (requestValue || responseValue || entryName) {
-      props.saveChangeHandler(
-        _.cloneDeep(entryName),
-        _.cloneDeep(requestValue),
-        _.cloneDeep(responseValue)
+      props.saveChangeHandler({
+        name:_.cloneDeep(entryName),
+        request:_.cloneDeep(requestValue),
+        response:_.cloneDeep(responseValue)
+      }
       );
     }
   };
@@ -79,7 +81,9 @@ export const EditStub = props => {
       }
     }
   };
-  const modeClass = props.mode === "dard" ? "dard-mode" : "";
+  const modeClass = props.mode === "dard" ? "dard-mode" : "light-mode";
+  const jsonEditTheme = props.jsonEditTheme || "dark_vscode_tribute";
+
   return props.data && props.data.obj ? (
     <Modal
       size="lg"
@@ -110,7 +114,7 @@ export const EditStub = props => {
                 onChange={val => setEntryName(val.target.value)}
               />
             </div>
-            <ButtonGroup aria-label="Basic example">
+            <ButtonGroup>
               <Button
                 variant={toggleRequestCode === "json" ? "info" : "secondary"}
                 onClick={() => Toggle("requestCode", "json")}
@@ -135,19 +139,22 @@ export const EditStub = props => {
               ></textarea>
             )}
             {toggleRequestCode === "json" && (
-              <JSONInput
-                id="a_unique_id"
-                placeholder={initializeRequestValue}
-                locale={locale}
-                width="100%"
-                height="200px"
-                onChange={value => {
-                  if (value.jsObject) {
-                    setTempRequestValue(value.jsObject);
-                    setInitializeRequestValue(value.jsObject);
-                  }
-                }}
-              />
+              <div className="block-area block-area-2">
+                <JSONInput
+                  theme={jsonEditTheme}
+                  id="a_unique_id"
+                  placeholder={initializeRequestValue}
+                  locale={locale}
+                  width="100%"
+                  height="200px"
+                  onChange={value => {
+                    if (value.jsObject) {
+                      setTempRequestValue(value.jsObject);
+                      setInitializeRequestValue(value.jsObject);
+                    }
+                  }}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -179,19 +186,22 @@ export const EditStub = props => {
               ></textarea>
             )}
             {toggleResponseCode === "json" && (
-              <JSONInput
-                id="b_unique_id"
-                placeholder={initializeResponseValue}
-                locale={locale}
-                width="100%"
-                height="450px"
-                onChange={value => {
-                  if (value.jsObject) {
-                    setTempResponseValue(value.jsObject);
-                    setInitializeResponseValue(value.jsObject);
-                  }
-                }}
-              />
+              <div className="block-area block-area-2">
+                <JSONInput
+                  theme={jsonEditTheme}
+                  id="b_unique_id"
+                  placeholder={initializeResponseValue}
+                  locale={locale}
+                  width="100%"
+                  height="450px"
+                  onChange={value => {
+                    if (value.jsObject) {
+                      setTempResponseValue(value.jsObject);
+                      setInitializeResponseValue(value.jsObject);
+                    }
+                  }}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -207,3 +217,14 @@ export const EditStub = props => {
     </Modal>
   ) : null;
 };
+
+export default connect(
+  state => ({
+    mode: state.userSettings.mode,
+    theme: state.userSettings.jsonTheme,
+    show: state.modal.edit.show,
+    data: state.ui.selectedNode,
+    jsonEditTheme: state.userSettings.jsonEditTheme
+  }),
+  { handleClose: hideEditStub, saveChangeHandler: editStub }
+)(EditStub);
