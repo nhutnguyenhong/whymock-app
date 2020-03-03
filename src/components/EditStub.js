@@ -7,7 +7,7 @@ import _ from "lodash";
 import { useState, useEffect } from "react";
 import { ButtonGroup } from "react-bootstrap";
 import { connect } from "react-redux";
-import { hideEditStub, editStub } from "../actions";
+import { hideEditStubModal, editStub } from "../actions";
 
 const EditStub = props => {
   const [initializeRequestValue, setInitializeRequestValue] = useState(
@@ -226,5 +226,5 @@ export default connect(
     data: state.ui.selectedNode,
     jsonEditTheme: state.userSettings.jsonEditTheme
   }),
-  { handleClose: hideEditStub, saveChangeHandler: editStub }
+  { handleClose: hideEditStubModal, saveChangeHandler: editStub }
 )(EditStub);

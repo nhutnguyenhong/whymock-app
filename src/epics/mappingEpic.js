@@ -183,7 +183,7 @@ const enableStubEpic = (action$, state$, { $saveStub }) =>
     mergeMap(() => {
       const stub = { ...state$.value.ui.selectedNode.obj };
       stub.response.body = JSON.stringify(stub.response.body);
-      stub.metadata = { file_name: stub.metadata.file_name };
+      stub.metadata = { ...stub.metadata,status:undefined };
 
       return $saveStub(stub).pipe(
         map(data => {
@@ -321,7 +321,7 @@ const updateStubEpic = (action$, state$, { $saveStub }) =>
         stub.response.body = JSON.stringify(stub.response.body);
       }
       stub.name = name || stub.name;
-      
+      stub.hashId = undefined;
       return concat(
         $saveStub(stub).pipe(
           map(() => {

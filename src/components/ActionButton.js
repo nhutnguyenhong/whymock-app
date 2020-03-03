@@ -114,7 +114,7 @@ const ActionButton = ({
         <Button
           href="#"
           tooltip="Share this stub to context"
-          onClick={()=>shareStub(selectedNode)}
+          onClick={()=>shareStub(selectedNode.obj)}
           icon="fa fa-share"
           styles={{
             backgroundColor: darkColors.cyan,
