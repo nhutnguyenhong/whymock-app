@@ -11,7 +11,9 @@ import {
   SAVE_STUB_SUCCESS,
   ADD_NEW_NODE_TO_TREE,
   DELETE_STUB_SUCCESS,
-  TOGGLE_NODE_BY_ID
+  TOGGLE_NODE_BY_ID,
+  COLLAPSE_WHOLE_TREE,
+  EXPAND_WHOLE_TREE
 } from "../actions/actions";
 import { _getHashId } from "../utils";
 
@@ -99,12 +101,57 @@ export default (state = initialState, action) => {
         ...state,
         rootTree: {
           ...state.rootTree,
-          children: newNodes
+          children: newNodes,
+          active: false,
         },
         selectedNode: selectedNode? selectedNode: state.selectedNode,
       };
     }
 
+    case COLLAPSE_WHOLE_TREE:{
+      const newNodes = state.rootTree.children.map(node => {
+        const newChildren = node.children.map(stub => {
+            return {
+              ...stub,
+              active: false,
+            };
+        });
+        return {
+          ...node,
+          children: newChildren,
+          toggled: false,
+        };
+      }
+    );
+    return {
+      ...state,
+      rootTree: {
+        ...state.rootTree,
+        children: newNodes,
+        toggled: false,
+      },
+      selectedNode: {},
+    };
+    }
+    case EXPAND_WHOLE_TREE:{
+      console.log('aaaaa');
+      const newNodes = state.rootTree.children.map(node => {
+        return {
+          ...node,
+          toggled: true,
+        };
+      }
+    );
+    console.log(newNodes);
+    return {
+      ...state,
+      rootTree: {
+        ...state.rootTree,
+        children: newNodes,
+        toggled: true,
+      },
+    };
+    }
     case TOGGLE_NODE_BY_ID: {
 
       const id = action.payload.node.id;

@@ -2,6 +2,8 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 
+import {getTip} from '../utils/tips'
+
 const statusDISABLE = "DISABLED";
 
 const Request = props => {
@@ -112,7 +114,7 @@ const Request = props => {
   return (
     <div className="not-available">
       {context ? "Hey " + _.startCase(context) + ", " : ""}
-      Why mock?
+      {getTip()}
     </div>
   );
 };

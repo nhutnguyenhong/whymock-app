@@ -1,12 +1,12 @@
 import React from "react";
 import { Treebeard } from "react-treebeard";
 import _ from "lodash";
-import { Badge } from "react-bootstrap";
+import { Badge, Nav } from "react-bootstrap";
 
 import { darkTheme, lightTheme } from "../theme/tree";
 import { connect } from "react-redux";
 import { rootNodeName, statusDISABLE } from "../constant/index";
-import { toggleNode, deActiveNode, selectNode } from "../actions";
+import { toggleNode, deActiveNode, selectNode, collapseWholeTree,expandWholeTree, createStub} from "../actions";
 
 const TreeItemDisplay = ({ item }) => {
   const {
@@ -48,7 +48,10 @@ const TreeOfStubs = ({
   selectedNode,
   deActiveNode,
   toggleNode,
-  selectNode
+  selectNode,
+  collapseWholeTree,
+  createStub,
+  expandWholeTree,
 }) => {
   const onToggle = (node, toggled) => {
     if (selectedNode.hashId) {
@@ -79,11 +82,21 @@ const TreeOfStubs = ({
     children: [...renderedNodes]
   };
   return (
+    <React.Fragment>
+      <Nav.Link className="tree-menu-item" onClick={createStub}>
+      <i className="fa fa-plus" aria-hidden="true"></i></Nav.Link>
+
+      <Nav.Link className="tree-menu-item tree-menu-item-2" onClick={expandWholeTree}>
+      <i className="fa fa-plus-square-o" aria-hidden="true"></i></Nav.Link>
+
+      <Nav.Link className="tree-menu-item tree-menu-item-3" onClick={collapseWholeTree}>
+      <i className="fa fa-minus-square-o" aria-hidden="true"></i></Nav.Link>
     <Treebeard
       data={data}
       onToggle={onToggle}
       style={mode === "dard" ? darkTheme : lightTheme}
     />
+    </React.Fragment>
   );
 };
 
@@ -97,6 +110,9 @@ export default connect(
   {
     toggleNode,
     deActiveNode,
-    selectNode
+    selectNode,
+    collapseWholeTree,
+    expandWholeTree,
+    createStub,
   }
 )(TreeOfStubs);

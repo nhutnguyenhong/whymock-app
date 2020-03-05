@@ -4,12 +4,14 @@ import {
   HIDE_ABOUT_MODAL,
   USER_SETTING_UPDATE_MODE,
   USER_SETTING_UPDATE,
+  EXPAND_WHOLE_TREE,
   SHOW_SETTING_MODAL,
   HIDE_SETTING_MODAL,
   USER_SETTING_UPDATE_SUCCESS,
   USER_SETTING_TOGGLE_LAYOUT,
   LOAD_USER_SETTING,
   SELECT_NODE,
+  COLLAPSE_WHOLE_TREE,
   EDIT_STUB,
   DELETE_STUB,
   TOGGLE_NODE_BY_ID,
@@ -129,3 +131,7 @@ export const createNewStub = createAction(CREATE_NEW_STUB);
 export const createNewStubSuccess = createAction(CREATE_NEW_STUB_SUCCESS);
 export const addNewNodeToTree = createAction(ADD_NEW_NODE_TO_TREE);
 export const changeUrl = createAction(CHANGE_URL);
+
+export const collapseWholeTree = createAction(COLLAPSE_WHOLE_TREE);
+
+export const expandWholeTree = createAction(EXPAND_WHOLE_TREE);

@@ -46,7 +46,9 @@
   background-color: #131c29!important;
 
 }
-
+div.css-26l3qy, .css-26l3qy-menu {
+  z-index: 40;
+}
 .dard-mode,.dard-mode .container,.dard-mode .tree-view,
 
 
@@ -429,4 +431,28 @@ span .badge, button {
 
 .uploadStub .json{
   height: 300px;
+}
+
+.tree-menu-item{
+  position: absolute;
+  padding: 0;
+  right: 20px;
+  top:5px;
+  z-index: 20;
+  color: #627280!important;
+}
+.tree-menu-item i {
+  transition: all .6s cubic-bezier(0.165, 0.84, 0.44, 1);
+
+}
+.tree-menu-item i:hover{
+  transform: scale(1.35, 1.35);
+}
+
+.tree-menu-item-2{
+  right: 40px;
+}
+
+.tree-menu-item-3{
+  right: 60px;
 }

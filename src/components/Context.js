@@ -96,7 +96,7 @@ class Context extends React.Component {
             Close
           </Button>
           <Button variant="primary" onClick={this.saveChangeHandler}>
-            Save Changes
+            Switch
           </Button>
         </Modal.Footer>
       </Modal>

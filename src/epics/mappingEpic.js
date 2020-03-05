@@ -196,7 +196,7 @@ const disableStubEpic = (action$, state$, { $saveStub }) =>
   action$.pipe(
     ofType(DISABLE_STUB),
     mergeMap(() => {
-      const stub = { ...state$.value.ui.selectedNode.obj };
+      const stub = { ...state$.value.ui.selectedNode.obj,hashId:undefined };
       stub.response.body = JSON.stringify(stub.response.body);
       stub.metadata.status = statusDISABLE;
 

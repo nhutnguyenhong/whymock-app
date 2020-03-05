@@ -62,6 +62,7 @@ const EditStub = props => {
       }
       );
     }
+    props.handleClose();
   };
 
   const Toggle = (type, value) => {
