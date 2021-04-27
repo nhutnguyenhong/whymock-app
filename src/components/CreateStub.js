@@ -103,7 +103,7 @@ const CreateStub = props => {
   const modeClass = props.mode === "dard" ? "dard-mode" : "";
   const jsonEditTheme = props.jsonEditTheme || "dark_vscode_tribute";
   const isSharingContext = initialData && initialData.share;
-console.log("show",props.show);
+  const waitAfterKeyPress = 6000;
   return (
     <Modal
       size="lg"
@@ -238,6 +238,7 @@ console.log("show",props.show);
                   locale={locale}
                   width="100%"
                   height="400px"
+                  waitAfterKeyPress={waitAfterKeyPress}
                   onChange={val => {
                     setUserEnterResponse(val.jsObject);
                   }}
