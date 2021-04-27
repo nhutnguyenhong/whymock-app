@@ -84,7 +84,7 @@ const EditStub = props => {
   };
   const modeClass = props.mode === "dard" ? "dard-mode" : "light-mode";
   const jsonEditTheme = props.jsonEditTheme || "dark_vscode_tribute";
-
+  const waitAfterKeyPress = 6000;
   return props.data && props.data.obj ? (
     <Modal
       size="lg"
@@ -148,6 +148,7 @@ const EditStub = props => {
                   locale={locale}
                   width="100%"
                   height="200px"
+                  waitAfterKeyPress={waitAfterKeyPress}
                   onChange={value => {
                     if (value.jsObject) {
                       setTempRequestValue(value.jsObject);
@@ -195,6 +196,7 @@ const EditStub = props => {
                   locale={locale}
                   width="100%"
                   height="450px"
+                  waitAfterKeyPress={waitAfterKeyPress}
                   onChange={value => {
                     if (value.jsObject) {
                       setTempResponseValue(value.jsObject);
